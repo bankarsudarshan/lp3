@@ -1,61 +1,49 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.0;
 
 contract StudentData {
-    // Structure to store student information
-    struct Student {
-        uint id;
+    // structure
+    struct Student{
         string name;
-        uint age;
-        string course;
+        uint256 rollno;
+        string class;
+        uint256 age;
     }
 
-    // Dynamic array to store multiple students
-    Student[] public students;
+    // arrays
+    Student[] public studentArr;
 
-    // Owner of the contract
-    address public owner;
+    function addStudent(string memory name, uint256 rollno, string memory class, uint256 age) public{
+        for(uint i=0; i<studentArr.length; i++) {
+            if(studentArr[i].rollno == rollno)
+                revert("Student with this roll number already exists");
+        }
 
-    // Events for logs
-    event StudentAdded(uint id, string name);
-    event Received(address sender, uint amount);
-    event FallbackCalled(address sender, uint amount, bytes data);
-
-    constructor() {
-        owner = msg.sender; // The account deploying the contract becomes the owner
+        studentArr.push(Student(name, rollno, class, age));
     }
 
-    // Function to add a student to the array
-    function addStudent(uint _id, string memory _name, uint _age, string memory _course) public {
-        Student memory newStudent = Student({
-            id: _id,
-            name: _name,
-            age: _age,
-            course: _course
-        });
-        students.push(newStudent);
-        emit StudentAdded(_id, _name);
+    function getStudentLength() public view returns(uint) {
+        return studentArr.length;
     }
 
-    // Function to get total number of students
-    function getTotalStudents() public view returns (uint) {
-        return students.length;
+    function displayAllStudents() public view returns(Student[] memory) {
+        return studentArr;
     }
 
-    // Function to get student details by index
-    function getStudent(uint index) public view returns (uint, string memory, uint, string memory) {
-        require(index < students.length, "Invalid index");
-        Student memory s = students[index];
-        return (s.id, s.name, s.age, s.course);
+    function getStudentByRollNo(uint rollno) public view returns(Student memory) {
+        for(uint i=0; i<studentArr.length; i++) {
+            if(studentArr[i].rollno == rollno)
+                return studentArr[i]; 
+        }
+
+        revert("Student not found");
     }
 
-    // Function to receive ETH (called when someone sends ETH directly)
-    receive() external payable {
-        emit Received(msg.sender, msg.value);
+    fallback() external payable { 
+        // This function will handle external function calls that are not in contract
     }
 
-    // Fallback function (called when function name not found)
-    fallback() external payable {
-        emit FallbackCalled(msg.sender, msg.value, msg.data);
+    receive() external payable { 
+        // This function will handle ether sent by external user but without data mentioned
     }
 }
